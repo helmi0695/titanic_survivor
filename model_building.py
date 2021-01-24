@@ -283,6 +283,109 @@ param_grid = {
 clf_xgb = GridSearchCV(xgb, param_grid = param_grid, cv = 5, verbose = True, n_jobs = -1)
 best_clf_xgb = clf_xgb.fit(X_train_scaled,y_train)
 clf_performance(best_clf_xgb,'XGB')
+# 84.92
+
+y_hat_xgb = best_clf_xgb.best_estimator_.predict(X_test_scaled).astype(int)
+xgb_submission = {'PassengerId': df_test.PassengerId, 'Survived': y_hat_xgb}
+submission_xgb = pd.DataFrame(data=xgb_submission)
+# submission_xgb.to_csv('xgb_submission_3.csv', index=False)
+
+
+# Model Additional Ensemble Approaches
+# 1) Experimented with a hard voting classifier of three estimators (KNN, SVM, RF) (81.6%)
+
+# 2) Experimented with a soft voting classifier of three estimators (KNN, SVM, RF) (82.3%) (Best Performance)
+
+# 3) Experimented with soft voting on all estimators performing better than 80% except xgb (KNN, RF, LR, SVC) (82.9%)
+
+# 4) Experimented with soft voting on all estimators including XGB (KNN, SVM, RF, LR, XGB) (83.5%)
+
+
+best_lr = best_clf_lr.best_estimator_
+best_knn = best_clf_knn.best_estimator_
+best_svc = best_clf_svc.best_estimator_
+best_rf = best_clf_rf.best_estimator_
+best_xgb = best_clf_xgb.best_estimator_
+
+voting_clf_hard = VotingClassifier(estimators = [('knn',best_knn),('rf',best_rf),('svc',best_svc)], voting = 'hard') 
+voting_clf_soft = VotingClassifier(estimators = [('knn',best_knn),('rf',best_rf),('svc',best_svc)], voting = 'soft') 
+voting_clf_all = VotingClassifier(estimators = [('knn',best_knn),('rf',best_rf),('svc',best_svc), ('lr', best_lr)], voting = 'soft') 
+voting_clf_xgb = VotingClassifier(estimators = [('knn',best_knn),('rf',best_rf),('svc',best_svc), ('xgb', best_xgb),('lr', best_lr)], voting = 'soft')
+
+print('voting_clf_hard :',cross_val_score(voting_clf_hard,X_train,y_train,cv=5))
+print('voting_clf_hard mean :',cross_val_score(voting_clf_hard,X_train,y_train,cv=5).mean())
+
+print('voting_clf_soft :',cross_val_score(voting_clf_soft,X_train,y_train,cv=5))
+print('voting_clf_soft mean :',cross_val_score(voting_clf_soft,X_train,y_train,cv=5).mean())
+
+print('voting_clf_all :',cross_val_score(voting_clf_all,X_train,y_train,cv=5))
+print('voting_clf_all mean :',cross_val_score(voting_clf_all,X_train,y_train,cv=5).mean())
+
+print('voting_clf_xgb :',cross_val_score(voting_clf_xgb,X_train,y_train,cv=5))
+print('voting_clf_xgb mean :',cross_val_score(voting_clf_xgb,X_train,y_train,cv=5).mean())
+
+
+#in a soft voting classifier you can weight some models more than others. I used a grid search to explore different weightings
+#no new results here
+params = {'weights' : [[1,1,1],[1,2,1],[1,1,2],[2,1,1],[2,2,1],[1,2,2],[2,1,2]]}
+
+vote_weight = GridSearchCV(voting_clf_soft, param_grid = params, cv = 5, verbose = True, n_jobs = -1)
+best_clf_weight = vote_weight.fit(X_train_scaled,y_train)
+clf_performance(best_clf_weight,'VC Weights')
+voting_clf_sub = best_clf_weight.best_estimator_.predict(X_test_scaled)
+
+#Make Predictions 
+voting_clf_hard.fit(X_train_scaled, y_train)
+voting_clf_soft.fit(X_train_scaled, y_train)
+voting_clf_all.fit(X_train_scaled, y_train)
+voting_clf_xgb.fit(X_train_scaled, y_train)
+
+best_rf.fit(X_train_scaled, y_train)
+y_hat_vc_hard = voting_clf_hard.predict(X_test_scaled).astype(int)
+y_hat_rf = best_rf.predict(X_test_scaled).astype(int)
+y_hat_vc_soft =  voting_clf_soft.predict(X_test_scaled).astype(int)
+y_hat_vc_all = voting_clf_all.predict(X_test_scaled).astype(int)
+y_hat_vc_xgb = voting_clf_xgb.predict(X_test_scaled).astype(int)
+
+#convert output to dataframe 
+final_data = {'PassengerId': df_test.PassengerId, 'Survived': y_hat_rf}
+submission = pd.DataFrame(data=final_data)
+
+final_data_2 = {'PassengerId': df_test.PassengerId, 'Survived': y_hat_vc_hard}
+submission_2 = pd.DataFrame(data=final_data_2)
+
+final_data_3 = {'PassengerId': df_test.PassengerId, 'Survived': y_hat_vc_soft}
+submission_3 = pd.DataFrame(data=final_data_3)
+
+final_data_4 = {'PassengerId': df_test.PassengerId, 'Survived': y_hat_vc_all}
+submission_4 = pd.DataFrame(data=final_data_4)
+
+final_data_5 = {'PassengerId': df_test.PassengerId, 'Survived': y_hat_vc_xgb}
+submission_5 = pd.DataFrame(data=final_data_5)
+
+final_data_comp = {'PassengerId': df_test.PassengerId, 'Survived_vc_hard': y_hat_vc_hard, 'Survived_rf': y_hat_rf, 'Survived_vc_soft' : y_hat_vc_soft, 'Survived_vc_all' : y_hat_vc_all,  'Survived_vc_xgb' : y_hat_vc_xgb}
+comparison = pd.DataFrame(data=final_data_comp)
+
+#track differences between outputs 
+comparison['difference_rf_vc_hard'] = comparison.apply(lambda x: 1 if x.Survived_vc_hard != x.Survived_rf else 0, axis =1)
+comparison['difference_soft_hard'] = comparison.apply(lambda x: 1 if x.Survived_vc_hard != x.Survived_vc_soft else 0, axis =1)
+comparison['difference_hard_all'] = comparison.apply(lambda x: 1 if x.Survived_vc_all != x.Survived_vc_hard else 0, axis =1)
+
+comparison.difference_hard_all.value_counts()
+
+
+# #prepare submission files 
+# submission.to_csv('submission_rf.csv', index =False)
+# submission_2.to_csv('submission_vc_hard.csv',index=False)
+# submission_3.to_csv('submission_vc_soft.csv', index=False)
+# submission_4.to_csv('submission_vc_all.csv', index=False)
+# submission_5.to_csv('submission_vc_xgb2.csv', index=False)
+
+
+
+
+
+
 
 
 
