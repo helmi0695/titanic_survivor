@@ -1,1 +1,1 @@
-# titanic_survivor
+# Titanic Survivor Predictor: Project Overview 
