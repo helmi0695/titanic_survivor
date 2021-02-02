@@ -8,7 +8,7 @@
 ## Code and Resources Used 
 **Python Version:** 3.7  
 **Packages:** pandas, numpy, sklearn, matplotlib, seaborn      
-**Data:** https://www.kaggle.com/c/titanic/data
+**Dataset:** https://www.kaggle.com/c/titanic/data
 
 
 ## Light Data Exploration
