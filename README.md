@@ -8,17 +8,15 @@
 ## Code and Resources Used 
 **Python Version:** 3.7  
 **Packages:** pandas, numpy, sklearn, matplotlib, seaborn
-**Data set: Kaggle competition:** https://www.kaggle.com/c/titanic/data
+**Data set:** https://www.kaggle.com/c/titanic/data
 
 ## Light Data Exploration
 **For numeric data:
-
 * Made histograms to understand distributions
 * Corrplot
 * Pivot table comparing survival rate across numeric variables
 
 **For Categorical Data
-
 * Made bar charts to understand balance of classes
 * Made pivot tables to understand relationship with survival
 
