@@ -7,9 +7,8 @@
 
 ## Code and Resources Used 
 **Python Version:** 3.7  
-**Packages:** pandas, numpy, sklearn, matplotlib, seaborn    
-**Scraper Article:** https://towardsdatascience.com/selenium-tutorial-scraping-glassdoor-com-in-10-minutes-3d0915c6d905  
-**Flask Productionization:** https://www.kaggle.com/c/titanic/data
+**Packages:** pandas, numpy, sklearn, matplotlib, seaborn      
+**Data:** https://www.kaggle.com/c/titanic/data
 
 
 ## Light Data Exploration
