@@ -63,8 +63,8 @@ I also used Randomized Search for the Random Forest and XG boosted model to simp
 ## Model Additional Ensemble Approaches
 * Experimented with a hard voting classifier of three estimators (KNN, SVM, RF) (81.6%)
 
-* Experimented with a soft voting classifier of three estimators (KNN, SVM, RF) (82.3%) (Best Performance)
+* Experimented with a soft voting classifier of three estimators (KNN, SVM, RF) (83.3%) (Best Performance)
 
 * Experimented with soft voting on all estimators performing better than 80% except xgb (KNN, RF, LR, SVC) (82.9%)
 
-* Experimented with soft voting on all estimators including XGB (KNN, SVM, RF, LR, XGB) (83.5%)
+* Experimented with soft voting on all estimators including XGB (KNN, SVM, RF, LR, XGB) (82.5%)
